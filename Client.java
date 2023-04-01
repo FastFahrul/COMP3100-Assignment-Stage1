@@ -80,6 +80,7 @@ public class Client{
                 }
 
                 else{
+                    // exit loop is NONE received from ds-server
                     break;
                 }
             }
