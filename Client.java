@@ -4,8 +4,6 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import javax.swing.RepaintManager;
-
 public class Client {
     public static void main(String[] args) {
         try {
@@ -21,10 +19,10 @@ public class Client {
             // contains reponse from ds-server
             String response;
 
-            // Job ID variable
+            // job ID variable
             int jobID;
 
-            // Server ID variable
+            // server ID variable
             int serverID;
 
             // total number of largest server types
@@ -111,8 +109,6 @@ public class Client {
                         }
                     }
 
-                    System.out.println("The largest number of cores in a server is: " + maxValue);
-
                     // add the severs into largestServer arrayList that have the largest number of
                     // cores
                     for (String[] element : serverInfo) {
@@ -124,40 +120,64 @@ public class Client {
 
                     // index of largestServers arrayList
                     int index;
+                    // server type of the largest server
                     serverType = largestServers.get(0)[0];
+                    // arraylist to keep track of job IDs completed
+                    ArrayList<Integer> jobIds = new ArrayList<Integer>();
 
                     while (!response.equals("NONE")) {
+                        //  find total number of server
                         totalServers = largestServers.size();
+                        // find index of largest server to use via modulo operation
                         index = jobID % totalServers;
 
+                        // find server ID for he largest server 
                         serverID = Integer.parseInt(largestServers.get(index)[1]);
-                        System.out.println(serverID);
 
-                        // send SCHD to ds-server
-                        dout.write(("SCHD " + String.valueOf(jobID) + " " + serverType + " " + String.valueOf(serverID)
-                                + "\n").getBytes());
+                        // if job id has not been SCHD, then SCHD job ID
+                        if (!jobIds.contains(jobID)) {
+                            // send SCHD to ds-server
+                            dout.write(
+                                    ("SCHD " + String.valueOf(jobID) + " " + serverType + " " + String.valueOf(serverID)
+                                            + "\n").getBytes());
+                            // add job ID to arrayList of completed job ID
+                            jobIds.add(jobID);
+                        }
 
-                        // read and print out message from ds-server
+                        // read response
                         response = (String) dis.readLine();
-                        System.out.println("message: " + response);
-
+                        
+                        // send REDY to ds-server
                         dout.write(("REDY\n").getBytes());
                         dout.flush();
-                        
-                        response = (String) dis.readLine();
-                        System.out.println("message: " + response);
 
+                        // read response
+                        response = (String) dis.readLine();
+
+                        // loop while mit is a JCPL message
+                        while (response.split(" ")[0].equals("JCPL")) {
+                            // send REDY to ds-server
+                            dout.write(("REDY\n").getBytes());
+
+                            // read response
+                            response = (String) dis.readLine();
+                        }
+
+                        // split reponse message
                         String[] tester = response.split(" ");
 
-                        if(tester[0].equals("JOBN")){
+                        // find the new job ID to SCHD
+                        if (tester[0].equals("JOBN")) {
                             jobnParts = response.split(" ");
+                            System.out.println(tester[0]);
+                            System.out.println(tester[0].equals("JOBN"));
                             jobID = Integer.parseInt(jobnParts[2]);
                             System.out.println("The Job ID is: " + jobID);
                         }
                     }
 
                 }
-                
+
                 // break from loop if reponse is none
                 if (response.equals("NONE")) {
                     break;
