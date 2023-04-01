@@ -35,41 +35,36 @@ public class Client {
             dout.write(("HELO\n").getBytes());
             dout.flush();
 
-            // read and print out message
+            // read response
             response = (String) dis.readLine();
-            System.out.println("message: " + response);
 
             // send AUTH info to ds-server
             dout.write(("AUTH fahrul\n").getBytes());
             dout.flush();
 
-            // read and print out message
+            // read response
             response = (String) dis.readLine();
-            System.out.println("message: " + response);
 
             while (true) {
                 // send REDY to ds-server
                 dout.write(("REDY\n").getBytes());
                 dout.flush();
 
-                // read and print out message
+                // read response
                 response = (String) dis.readLine();
-                System.out.println("message: " + response);
 
                 while (!response.equals("NONE")) {
                     // string array that contains JOBN command reponse from ds-sever
                     String[] jobnParts = response.split(" ");
                     // index number for Job ID in the JOBN command is 2
                     jobID = Integer.parseInt(jobnParts[2]);
-                    System.out.println("The Job ID is: " + jobID);
 
                     // send GETS All to ds-server
                     dout.write(("GETS All\n").getBytes());
                     dout.flush();
 
-                    // read and print out message
+                    // read response
                     response = (String) dis.readLine();
-                    System.out.println("message: " + response);
 
                     // workout loop delimeter for DATA provided
                     String[] limiterString = response.split(" ");
@@ -93,9 +88,8 @@ public class Client {
                     dout.write(("OK\n").getBytes());
                     dout.flush();
 
-                    // read and print out message
+                    // read response
                     response = (String) dis.readLine();
-                    System.out.println("message: " + response);
 
                     // array list of all the servers with the largest cores
                     ArrayList<String[]> largestServers = new ArrayList<String[]>();
@@ -169,10 +163,7 @@ public class Client {
                         // find the new job ID to SCHD
                         if (tester[0].equals("JOBN")) {
                             jobnParts = response.split(" ");
-                            System.out.println(tester[0]);
-                            System.out.println(tester[0].equals("JOBN"));
                             jobID = Integer.parseInt(jobnParts[2]);
-                            System.out.println("The Job ID is: " + jobID);
                         }
                     }
 
@@ -190,7 +181,6 @@ public class Client {
 
             // read and print out message
             response = (String) dis.readLine();
-            System.out.println("message: " + response);
 
             // close input stream, output stream and socket.
             dis.close();
