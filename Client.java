@@ -3,6 +3,10 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 
 public class Client{
     public static void main(String[] args){
@@ -63,18 +67,53 @@ public class Client{
 
                     // workout loop delimeter for DATA provided
                     String[] limiterString = response.split(" ");
-                    int limiter = Integer.parseInt(limiterString[1]) + 1;
-                    System.out.println(limiter);
+                    int limiter = Integer.parseInt(limiterString[1]);
 
                     // send OK to ds-server
                     dout.write(("OK\n").getBytes());
                     dout.flush();
 
+                    // arraylist to add array of server info string
+                    ArrayList<String> serverInfo = new ArrayList<String>();
+
                     // print DATA received from ds-server line by line (number of lines provided by limiter)
                     for(int j=0; j<limiter; j++){
                         response = (String) dis.readLine();
-                        System.out.println("Server info is: " + response);
+                        serverInfo.add(response);
                     }
+
+                    // make a custom comparator to sort items in serverInfo arrayList
+                    Comparator<String> lrrComparator = new Comparator<String>() {
+                        @Override
+                        public int compare(String s1, String s2) {
+                            String[] parts1 = s1.split(" ");
+                            String[] parts2 = s2.split(" ");
+                            int value1 = Integer.parseInt(parts1[4]);
+                            int value2 = Integer.parseInt(parts2[4]);
+                            int result = Integer.compare(value2, value1); // sort by index 4 in descending order
+                            if (result == 0) { // if index 4 values are equal
+                                int index2Value1 = Integer.parseInt(parts1[1]);
+                                int index2Value2 = Integer.parseInt(parts2[1]);
+                                result = Integer.compare(index2Value1, index2Value2); // sort by index 2 in ascending order
+                            }
+                            return result;
+                        }
+                    };
+
+                    // call sort on serverInfo with custom
+                    Collections.sort(serverInfo, lrrComparator);
+
+                    for(String element: serverInfo){
+                        System.out.println(element);
+                    }
+                    
+                    // send OK to ds-server
+                    dout.write(("OK\n").getBytes());
+                    dout.flush();
+
+                    // read and print out message
+                    response = (String) dis.readLine();
+                    System.out.println("message: " + response);
 
                     i++;
                 }
